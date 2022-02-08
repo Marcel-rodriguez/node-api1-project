@@ -1,10 +1,11 @@
 // BUILD YOUR SERVER HERE
 const userModel = require('./users/model')
 const express = require('express');
-const { required } = require('nodemon/lib/config');
+const cors = require('cors')
 const server = express()
 
 server.use(express.json());
+server.use(cors())
 
 server.get('/', (req, res) => {
     console.log('Server: Sanity Check Success...')
@@ -59,7 +60,7 @@ server.put('/api/users/:id', async (req, res) => {
 
         let body = req.body
         if(!body.name || !body.bio){
-            res.status(500).json({message: "Name and Bio is required!"})
+            res.status(400).json({message: "Please provide name and bio for the user"})
         } else {
             let newUser = await userModel.update(id, body)
             console.log(newUser)
@@ -67,7 +68,7 @@ server.put('/api/users/:id', async (req, res) => {
         }
 
     } catch(e) {
-        res.status(500).json({message: "Cannot Update User, User not found!"})
+        res.status(500).json({message: "The user information could not be modified"})
     }
 })
 
@@ -77,13 +78,13 @@ server.delete('/api/users/:id', (req, res) => {
     userModel.remove(id)
     .then(deletedUser => {
         if(deletedUser === undefined || deletedUser === null){
-            res.status(404).json({message: "could not find specific user to delete!"})
+            res.status(404).json({message: "The user with the specified ID does not exist"})
             return;
         }
 
-        res.status(200).json({message: "Successfully deleted user!"})
+        res.status(200).json(deletedUser)
     }).catch(() => {
-        res.status(500).json({message: "Unable to delete user!"})
+        res.status(500).json({message: "The user could not be removed"})
     })
 })
 
